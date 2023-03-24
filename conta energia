@@ -5,19 +5,23 @@ tem q pensar como colocar os intervalos de tempo
 
 */
 
-float Irms, P, RS, preco, Isensor[1000],i,j ;
-float energia = 0;
 #define diasmes 30
 #define tentreamostras 30
-#define Vrms 127
-float medir_Irms(Irms);
+#define preco 1.50
+#define amostragem 1000
+
+float Irms, P, RS, Isensor[amostragem],i, Vrms, Vsensor[amostragem];
+float energia = 0;
+float medir_Irms();
+float medir_Vrms();
 float calcular_valor();
 
 int main(){
 
 for ( i = 0; i < i<(diasmes*24*3600)/tentreamostras; i++)
 {
-    medir_Irms(Irms);
+    medir_Irms();
+    medir_Vrms();
     calcular_valor();
     
 }
@@ -25,20 +29,50 @@ for ( i = 0; i < i<(diasmes*24*3600)/tentreamostras; i++)
 
 }
 
-float medir_Irms(Irms){ 
-      
+float medir_Irms(){ 
+        int j;
         float sum = 0;
 for (int j = 0; j < 1000; j++) {
     sum += pow(Isensor[j], 2);
 }
 float rms = sqrt(sum / 1000);
-float Irms = rms * sqrt(2);
+ Irms = rms * sqrt(2);
+
+}
+float medir_Vrms(){ 
+        int j;
+        float sum = 0;
+for (int j = 0; j < 1000; j++) {
+    sum += pow(Isensor[j], 2);
+}
+float rms = sqrt(sum / 1000);
+ Irms = rms * sqrt(2);
 
 }
 
-float calcular_valor(){
-    P= Vrms * Irms;
-    energia += P * tentreamostras/(3600*1000);
-    RS = preco * energia; 
 
+float calcular_valor() {
+    // Verifica se as variáveis foram inicializadas corretamente
+    if (Vrms <= 0 || Irms <= 0 || preco <= 0 || tentreamostras <= 0) {
+        return 0;
+    }
+
+    // Calcula a potência média durante o tempo de amostragem
+    P = Vrms * Irms;
+    
+    // Converte o tempo de amostragem de segundos para horas
+    float tempo = (float) tentreamostras / 3600.0;
+
+    // Calcula a energia consumida durante o tempo de amostragem
+    float energia_amostragem = P * tempo / 1000.0;
+
+    // Adiciona a energia consumida durante o tempo de amostragem ao total de energia consumida
+    energia += energia_amostragem;
+
+    // Calcula o valor em reais (RS) correspondente à energia consumida
+    RS = preco * energia;
+
+    // Retorna a energia consumida em kWh
+    return energia / 1000.0;
 }
+
