@@ -5,15 +5,18 @@ tem q pensar como colocar os intervalos de tempo
 
 */
 
+
 #define diasmes 30
 #define tentreamostras 30
 #define preco 1.50
 #define amostragem 1000
 
-float Irms, P, RS, Isensor[amostragem],i, Vrms, Vsensor[amostragem];
+float Irms, P, RS, Isensor[amostragem],i, Vrms, Vsensor[amostragem], FP, tVmax, tImax, defasagem;
+float pi = 3.1415926;
 float energia = 0;
 float medir_Irms();
 float medir_Vrms();
+float calcularFP();
 float calcular_valor();
 
 int main(){
@@ -22,6 +25,7 @@ for ( i = 0; i < i<(diasmes*24*3600)/tentreamostras; i++)
 {
     medir_Irms();
     medir_Vrms();
+    calcularFP();
     calcular_valor();
     
 }
@@ -32,22 +36,36 @@ for ( i = 0; i < i<(diasmes*24*3600)/tentreamostras; i++)
 float medir_Irms(){ 
         int j;
         float sum = 0;
-for (int j = 0; j < 1000; j++) {
+        tImax = 0;
+    for (int j = 0; j < amostragem; j++) {
     sum += pow(Isensor[j], 2);
+        if(Isensor[j]>tImax){
+        tImax = j;
+    }
 }
-float rms = sqrt(sum / 1000);
+float rms = sqrt(sum / amostragem);
  Irms = rms * sqrt(2);
 
 }
 float medir_Vrms(){ 
         int j;
         float sum = 0;
-for (int j = 0; j < 1000; j++) {
+        tVmax = 0;
+for (int j = 0; j < amostragem; j++) {
     sum += pow(Isensor[j], 2);
+        if(Vsensor[j]>tVmax){
+        tVmax = j;
+    }
 }
-float rms = sqrt(sum / 1000);
+float rms = sqrt(sum / amostragem);
  Irms = rms * sqrt(2);
 
+}
+
+float calcularFP(){
+  defasagem = ((tImax-tVmax)*2*pi)/1000
+ /*adicionar math.h e
+  FP= cos(defasagem)*/
 }
 
 
@@ -58,7 +76,7 @@ float calcular_valor() {
     }
 
     // Calcula a potência média durante o tempo de amostragem
-    P = Vrms * Irms;
+    P = Vrms * Irms* FP;
     
     // Converte o tempo de amostragem de segundos para horas
     float tempo = (float) tentreamostras / 3600.0;
